@@ -21,9 +21,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git zip unzip autoconf libtool libltdl-dev pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev automake
       - name: Install buildozer
-        run: pip install --upgrade pip setuptools buildozer "cython<3"
-      - name: Pin NDK to the long-tested 25b
-        run: sed -i 's/^android.api = 33/android.api = 33\nandroid.ndk = 25b/' buildozer.spec
+        run: pip install --upgrade pip setuptools buildozer
+      - name: Let p4a choose its own Kivy version
+        run: sed -i 's/kivy==2.3.0/kivy/' buildozer.spec
       - name: Build APK
         run: |
           set -o pipefail
