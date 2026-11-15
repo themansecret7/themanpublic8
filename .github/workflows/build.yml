@@ -22,14 +22,23 @@ jobs:
           sudo apt-get install -y git zip unzip autoconf libtool libltdl-dev pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev automake
       - name: Install buildozer
         run: pip install --upgrade pip setuptools buildozer "cython<3"
+      - name: Pin NDK to the long-tested 25b
+        run: sed -i 's/^android.api = 33/android.api = 33\nandroid.ndk = 25b/' buildozer.spec
       - name: Build APK
         run: |
           set -o pipefail
           buildozer -v android debug 2>&1 | tee build.log
-      - name: Show end of log on failure
+      - name: Show errors on failure
         if: failure()
         run: |
-          { echo '### Last 80 lines of build log'; echo '```'; tail -n 80 build.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          sed 's/\x1b\[[0-9;]*m//g' build.log | grep -v -E '^# +[A-Za-z_0-9]+ = ' > clean.log
+          {
+            echo '### Error lines'; echo '```'
+            grep -n -i -E 'error|failed|exception|not found|no such file|fatal' clean.log | tail -n 30 | cut -c1-250
+            echo '```'; echo '### Last 50 lines before the env dump'; echo '```'
+            tail -n 50 clean.log | cut -c1-250
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
